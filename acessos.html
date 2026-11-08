@@ -1,0 +1,49 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Acessos · Laguna com Lula</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;600;700&display=swap">
+<style>
+:root{--bg:#f3f0f0;--surface:#fff;--ink:#1b1114;--ink2:#55474b;--muted:#857579;--line:#e4dadc;--grid:#efe7e8;--red:#d0121f;--on-red:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#140f10;--surface:#1c1416;--ink:#f6eff0;--ink2:#cfc2c5;--muted:#a29599;--line:#35292c;--grid:#2a2023;--red:#ef3340}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Barlow,system-ui,sans-serif}
+header{background:var(--red);color:var(--on-red);padding:22px 16px}header div,main{max-width:760px;margin:auto}
+header a{color:var(--on-red);font-weight:600}
+h1{font:800 clamp(32px,7vw,48px)/.95 "Barlow Condensed",sans-serif;text-transform:uppercase;margin:4px 0 0}
+main{padding:24px 16px;display:grid;gap:16px}.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px}
+h2{font:700 22px "Barlow Condensed",sans-serif;margin:0 0 8px}p{margin:6px 0}ol{margin:6px 0;padding-left:22px}li{margin:4px 0}
+label{display:grid;gap:4px;font-weight:600;font-size:14.5px}input{font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:9px 10px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:600px){.row{grid-template-columns:1fr}}
+button{font:700 15px Barlow,sans-serif;background:var(--red);color:var(--on-red);border:0;border-radius:4px;padding:9px 15px;cursor:pointer}
+button.o{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+pre{white-space:pre-wrap;word-break:break-all;background:var(--grid);border-radius:4px;padding:10px 12px;font-size:13px;margin:10px 0}
+.note{font-size:13.5px;color:var(--muted)}ul.u{margin:6px 0;padding-left:20px}code{background:var(--grid);padding:1px 5px;border-radius:3px;font-size:14px}
+</style></head><body>
+<header><div><a href="/">← Voltar ao painel</a><h1>Acessos ao painel</h1><p id="voce"></p></div></header>
+<main>
+<div class="card" id="lista" hidden><h2>Quem tem acesso hoje</h2><ul class="u" id="us"></ul></div>
+<div class="card" id="noadm" hidden><p>Só a administração do painel cadastra novos acessos. Se precisar liberar alguém, fale com a coordenação.</p></div>
+<div class="card" id="novo" hidden>
+<h2>Liberar um novo acesso</h2>
+<p>Digite o e-mail da pessoa e uma senha inicial. A página gera uma linha criptografada; a senha em si não fica guardada em lugar nenhum.</p>
+<div class="row"><label>E-mail<input type="email" id="ne" autocomplete="off"></label><label>Senha inicial<input type="text" id="ns" autocomplete="off" minlength="8"></label></div>
+<p><button id="gera">Gerar linha de acesso</button></p>
+<div id="out" hidden><pre id="linha"></pre><button class="o" id="copia">Copiar linha</button>
+<ol>
+<li>Abra a <a href="https://vercel.com/luiz-77be/lagunacomlula/settings/environment-variables" target="_blank" rel="noopener">página de variáveis do projeto na Vercel</a>.</li>
+<li>Na variável <code>AUTH_USERS</code>, clique nos três pontos e em <b>Edit</b>.</li>
+<li>Cole a linha no fim do valor, numa linha nova, e salve.</li>
+<li>Vá em <b>Deployments</b>, abra o mais recente e clique em <b>Redeploy</b>. Em menos de um minuto o novo acesso funciona.</li>
+</ol>
+<p class="note">Para tirar o acesso de alguém, apague a linha da pessoa na mesma variável e faça o Redeploy. Para trocar uma senha, gere uma linha nova e substitua a antiga.</p></div>
+</div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const b64u=a=>btoa(String.fromCharCode(...new Uint8Array(a))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+fetch('/api/acessos',{cache:'no-store'}).then(r=>r.json()).then(d=>{$('#voce').textContent='Conectado como '+d.voce+' · ';const a=document.createElement('a');a.href='/api/logout';a.textContent='Sair';$('#voce').append(a);
+ if(d.admin){$('#lista').hidden=$('#novo').hidden=false;$('#us').innerHTML=d.usuarios.map(e=>'<li>'+e.replace(/[<&]/g,'')+'</li>').join('')}else $('#noadm').hidden=false}).catch(()=>{$('#noadm').hidden=false});
+$('#gera').onclick=async()=>{const e=$('#ne').value.trim().toLowerCase(),s=$('#ns').value;if(!/^\S+@\S+\.\S+$/.test(e)){alert('Confira o e-mail.');return}if(s.length<8){alert('Use uma senha com pelo menos 8 caracteres.');return}
+ const salt=crypto.getRandomValues(new Uint8Array(16)),k=await crypto.subtle.importKey('raw',new TextEncoder().encode(s),'PBKDF2',false,['deriveBits']);
+ const h=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt,iterations:100000},k,256);
+ $('#linha').textContent=e+'=pbkdf2$100000$'+b64u(salt)+'$'+b64u(h);$('#out').hidden=false};
+$('#copia').onclick=async e=>{try{await navigator.clipboard.writeText($('#linha').textContent);e.target.textContent='Copiada'}catch(x){}};
+</script></body></html>
