@@ -693,7 +693,7 @@ const J24={k:'ej24',l:'Jovens de 16 a 24 anos',t:'pct',r:'d',f:o=>o.ej24/o.q,d:'
 const iv=(i,o)=>{const v=i.f(o);return v==null||!isFinite(v)?null:v};
 
 // ================= abas
-const TABS=[['segundo','2º turno'],['conjuntura','Conjuntura'],['panorama','1º turno'],['mapa','Mapa'],['recortes','Recortes'],['explorar','Explorar votos'],['local','Local de votação'],['cenarios','Cenários'],['meta','Meta e público'],['federacao','Federação'],['candidaturas','Candidaturas'],['eleitorado','Eleitorado'],['historia','História'],['plano','Plano de ação'],['ler','Como ler']];
+const TABS=[['panorama','1º turno'],['segundo','2º turno'],['conjuntura','Conjuntura'],['mapa','Mapa'],['recortes','Recortes'],['explorar','Explorar votos'],['local','Local de votação'],['cenarios','Cenários'],['meta','Meta e público'],['federacao','Federação'],['candidaturas','Candidaturas'],['eleitorado','Eleitorado'],['historia','História'],['plano','Plano de ação'],['ler','Como ler']];
 let TAB='panorama';
 TABS.forEach(([id,l])=>{const b=el('button',null,l);b.dataset.t=id;b.setAttribute('role','tab');b.onclick=()=>show(id);$('#nav').append(b)});
 function show(id,keep){if(!TABS.some(t=>t[0]===id))id='segundo';TAB=id;TABS.forEach(([t])=>{$('#t-'+t).hidden=t!==id});document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.t===id;b.setAttribute('aria-selected',on);if(on&&b.scrollIntoView)try{b.scrollIntoView({block:'nearest',inline:'nearest'})}catch(e){}});LS.set('felag.tab2',id);tip.hidden=true;
